@@ -84,7 +84,6 @@
     <Compile Include="DY.Designer.cs">
       <DependentUpon>DY.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExcelHelp.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

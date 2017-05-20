@@ -31,6 +31,7 @@ namespace LJSheng.App
             WH.PrintViewWord(@"D:\打印\POS111.doc");
         }
 
+        #region 打印WORD
         public static void byDoc(String time, String uid)
         {
             Microsoft.Office.Interop.Word.Application app = null;
@@ -88,7 +89,9 @@ namespace LJSheng.App
                     app.Quit(ref missing, ref missing, ref missing);
             }
         }
+        #endregion
 
+        #region 客户表格导入
         private void kehubt_Click(object sender, EventArgs e)
         {
             //商品读取
@@ -132,35 +135,26 @@ namespace LJSheng.App
 
                         //取得总记录行数   (包括标题列)
                         int rowsint = ws.UsedRange.Cells.Rows.Count; //得到行数
-                        //int columnsint = mySheet.UsedRange.Cells.Columns.Count;//得到列数
-                        //MessageBox.Show(ws.get_Range("A2", "A2").Text);
-                        // 列表集合将作为comboBox1的数据源
-                        List<MyItem> list = new List<MyItem>();
-                        for (int i = 1; i <= rowsint - 1; i++)
+                        if (rowsint > 0)
                         {
-                            list.Add(new MyItem(ws.get_Range("A" + i.ToString(), "A2").Text, ws.get_Range("A" + i.ToString(), "A3").Text));
+                            //int columnsint = mySheet.UsedRange.Cells.Columns.Count;//得到列数
+                            //Range rng = (Microsoft.Office.Interop.Excel.Range)ws.Cells[3, 2];
+                            //MessageBox.Show(rng.Text);
+                            // 列表集合将作为comboBox1的数据源
+                            List<MyItem> list = new List<MyItem>();
+                            for (int i = 2; i <= rowsint; i++)
+                            {
+                                list.Add(new MyItem(((Microsoft.Office.Interop.Excel.Range)ws.Cells[i, 1]).Text, ((Microsoft.Office.Interop.Excel.Range)ws.Cells[i, 2]).Text+"@"+ ((Microsoft.Office.Interop.Excel.Range)ws.Cells[i, 3]).Text + "@" + ((Microsoft.Office.Interop.Excel.Range)ws.Cells[i, 4]).Text + "@" + ((Microsoft.Office.Interop.Excel.Range)ws.Cells[i, 5]).Text));
+                            }
+                            // 绑定
+                            KHCB.DataSource = list;
+                            // 在comboBox1中显示MyItem的Name属性
+                            KHCB.DisplayMember = "Name";
                         }
-                        // 绑定
-                        KHCB.DataSource = list;
-                        // 在comboBox1中显示MyItem的Name属性
-                        KHCB.DisplayMember = "Name";
-                        ////取得数据范围区域 (不包括标题列) 
-                        //Range rng1 = ws.Cells.get_Range("B2", "B" + rowsint);   //item
-
-
-                        //Range rng2 = ws.Cells.get_Range("K2", "K" + rowsint); //Customer
-                        //object[,] arryItem = (object[,])rng1.Value2;   //get range's value
-                        //object[,] arryCus = (object[,])rng2.Value2;
-                        //将新值赋给一个数组
-                        //string[,] arry = new string[rowsint - 1, 2];
-                        //for (int i = 1; i <= rowsint - 1; i++)
-                        //{
-                        //    //Item_Code列
-                        //    arry[i - 1, 0] = arryItem[i, 1].ToString();
-                        //    //Customer_Name列
-                        //    arry[i - 1, 1] = arryCus[i, 1].ToString();
-                        //}
-                        //MessageBox.Show(arry[0, 0] + " / " + arry[0, 1] + "#" + arry[rowsint - 2, 0] + " / " + arry[rowsint - 2, 1]);
+                        else
+                        {
+                            MessageBox.Show("表格里没有数据");
+                        }
                     }
                     excel.Quit(); excel = null;
                     Process[] procs = Process.GetProcessesByName("excel");
@@ -174,16 +168,107 @@ namespace LJSheng.App
                 }
             }
         }
+        #endregion
 
+        #region 客户名单选中事件
         private void KHCB_SelectedIndexChanged(object sender, EventArgs e)
         {
             // 将被选中的项目强制转换为MyItem
-            MyItem item = comboBox1.SelectedItem as MyItem;
+            MyItem item = KHCB.SelectedItem as MyItem;
             // 显示被选中项的值
-            label1.Text = string.Format("Value = {0}", item.Value);
+            tb.Text = string.Format("Value = {0}", item.Value);
         }
+        #endregion
+
+        #region 只能输入数字
+        private void NumCheck(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != 8 && !Char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+        #endregion
+
+        private void DY_Load(object sender, EventArgs e)
+        {
+            #region 设置默认值
+            KHCB.SelectedText = "请选一个客户";
+            MBCB.SelectedText = "请选一个模板";
+            FLCB.SelectedText = "请选商家分类";
+            SJCB.SelectedText = "请选商家名称";
+            SPFLCB.SelectedText = "请选商品分类";
+            SPCB.SelectedText = "请选一个商品";
+            #endregion
+
+            #region 设置打印时间
+            //年份
+            for (int i = 2015; i <= 2025; i++)
+            {
+                NCB.Items.Add(i.ToString());
+            }
+            //月份
+            for (int i = 1; i <= 12; i++)
+            {
+                YCB.Items.Add(i.ToString().PadLeft(2, '0'));
+            }
+            //日
+            for (int i = 1; i <= 31; i++)
+            {
+                RCB.Items.Add(i.ToString().PadLeft(2, '0'));
+            }
+            //时
+            for (int i = 0; i <= 23; i++)
+            {
+                SCB.Items.Add(i.ToString().PadLeft(2, '0'));
+            }
+            //分秒
+            for (int i = 0; i <= 59; i++)
+            {
+                FCB.Items.Add(i.ToString().PadLeft(2, '0'));
+                MCB.Items.Add(i.ToString().PadLeft(2, '0'));
+            }
+            //设置当前默认日期
+            NCB.SelectedText = DateTime.Now.Year.ToString();
+            YCB.SelectedText = DateTime.Now.Month.ToString().PadLeft(2, '0');
+            RCB.SelectedText = DateTime.Now.Day.ToString().PadLeft(2, '0');
+            SCB.SelectedText = DateTime.Now.Hour.ToString().PadLeft(2, '0');
+            FCB.SelectedText = DateTime.Now.Minute.ToString().PadLeft(2, '0');
+            MCB.SelectedText = DateTime.Now.Second.ToString().PadLeft(2, '0');
+            #endregion
+
+            #region 设置商品列表
+            GV.Columns.Add("name", "名称");
+            GV.Columns.Add("num", "数量");
+            GV.Columns.Add("rmb", "价格");
+            GV.Columns[0].Width = 150;
+            GV.Columns[1].Width = 38;
+            GV.Columns[2].Width = 65;
+            #endregion
+        }
+        #region 选择商家
+        private void SJCB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //GV.RowsDefaultCellStyle.Font = new Font("宋体", 20);
+            GV.Rows.Clear();
+            DataSet ds;
+            //if (ds.Count > 0)
+            //{
+            //    foreach (var l in ds)
+            //    {
+            //        try
+            //        {
+            //            string[] s = l.Split(',');
+            //            GV.Rows.Add(s[0], s[1], s[2], s[3]);
+            //        }
+            //        catch { }
+            //    }
+            //}
+        }
+        #endregion
     }
 
+    #region 自定义集合类
     public class MyItem
     {
         public MyItem(string name, string value)
@@ -194,4 +279,5 @@ namespace LJSheng.App
         public string Name { get; private set; }
         public string Value { get; private set; }
     }
+    #endregion
 }
